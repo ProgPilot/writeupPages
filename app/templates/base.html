@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/codemicro/assetCDN@latest/css/tmain.css"> <!-- also imports bootstrap -->
+    <script src="https://cdn.jsdelivr.net/gh/codemicro/assetCDN@latest/js/jquery.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/codemicro/assetCDN@latest/js/bootstrap.bundle.min.js"></script>
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <style>
+
+        .leftpad {
+            padding-left: 5px;
+        }
+
+        .image-background {
+            background-image: url("https://www.progpilot.com/writeups/resources/banner.jpg");
+            background-size: cover;
+        }
+
+        .header {
+            font-family: 'Roboto Mono', monospace;
+            color: white;
+        }
+
+        .white {
+            color: white;
+        }
+
+        .whitelink, .whitelink:hover, .whitelink:active, .whitelink:visited {
+            color: white;
+        }
+
+
+    </style>
+
+    <title>{{ siteTitle }}</title>
+
+    {% include "components/meta.html" %}
+    {% include "components/analytics.html" %}
+
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+    {% include "components/nav.html" %}
+
+    <div class="container">
+
+        <div class="p-3"></div>
+
+        {% block body %}{% endblock %}
+
+        <div class="p-3"></div>
+
+        {% include "components/footer.html" %}
+
+    </div>
+</body>
+</html>

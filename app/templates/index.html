@@ -1,0 +1,33 @@
+{% set siteTitle = "ProgPilot writeups" %}
+{% set metaDescription = "Writeups by the CTF team ProgPilot" %}
+
+{% extends "base.html" %}
+
+{% block body %}
+
+    <script defer>
+        // Enable tooltips
+        $(function () { $('[data-toggle="tooltip"]').tooltip() });
+    </script>
+
+    <div class="row">
+
+        <div class="span" style="width: 25%">
+            <img src="https://www.progpilot.com/writeups/resources/progpilot.jpg" style="width: 70%" class="border" alt="avatar">
+        </div>
+    	<div class="span4">
+			<h1 class="display-4"><span id="name">ProgPilot</span></h1>
+    		<p class="display-6"><span id="lead"><a href="https://www.tdpain.net" data-toggle="tooltip" data-placement="bottom" data-html="true" title="<img src='https://www.progpilot.com/writeups/resources/tom.jpg'>" target="_blank">Tom Pain (0x5444)</a> and <a href="https://www.mrmelonhokage.com" data-toggle="tooltip" data-placement="bottom" data-html="true" title="<img src='https://www.progpilot.com/writeups/resources/eryk.jpg'>" target="_blank" rel="noopener">Eryk Majoch (mrmelonhokage)</a></span></p>
+
+            <p>We play CTFs.</p>
+
+            <a href="https://ctftime.org/team/69748/" rel="nofollow noopener" target="_blank" style="text-decoration: none;"><img src="https://www.progpilot.com/writeups/resources/ctft.png" border="0" style="padding-right: 5px;"> View on CTFtime</a>
+    	</div>
+
+    </div>
+
+    <br>
+
+    <p>Total writeups: <b>{{ totalWriteups }}</b></p>
+
+{% endblock body %}
