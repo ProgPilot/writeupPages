@@ -1,3 +1,4 @@
+{% set siteTitle = "ProgPilot writeups" %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +8,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/codemicro/assetCDN@latest/css/tmain.css"> <!-- also imports bootstrap -->
     <script src="https://cdn.jsdelivr.net/gh/codemicro/assetCDN@latest/js/jquery.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/codemicro/assetCDN@latest/js/bootstrap.bundle.min.js"></script>
-    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="shortcut icon" href="/favicon.ico">
 
     <style>
 
@@ -33,10 +34,27 @@
             color: white;
         }
 
+        .breadcrumb {
+            margin-bottom: unset;
+            background-color: unset;
+            border-radius: unset;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            display: inline-block;
+            padding-right: 0.5rem;
+            color: white;
+            content: ">";
+        }
+
 
     </style>
 
-    <title>{{ siteTitle }}</title>
+    {% if pageTitle is defined %}
+        {% set midpart = " | " %}
+    {% endif %}
+
+    <title>{{ pageTitle }}{{ midpart }}{{ siteTitle }}</title>
 
     {% include "components/meta.html" %}
     {% include "components/analytics.html" %}

@@ -246,3 +246,7 @@ modules.xml
 # Pyre type checker
 
 # End of https://www.gitignore.io/api/flask,python,pycharm+all
+
+settings.json
+creds.csv
+writeups.json

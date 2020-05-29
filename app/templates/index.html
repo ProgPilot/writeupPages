@@ -1,4 +1,3 @@
-{% set siteTitle = "ProgPilot writeups" %}
 {% set metaDescription = "Writeups by the CTF team ProgPilot" %}
 
 {% extends "base.html" %}
@@ -29,5 +28,17 @@
     <br>
 
     <p>Total writeups: <b>{{ totalWriteups }}</b></p>
+
+    <h4>Writeups by CTF</h4>
+
+    {% if writeups|length == 0 %}
+        <i>No writeups available at this time - please check back later</i>
+    {% else %}
+        <ul>
+        {% for ctf in writeups %}
+            <li><a href="{{ ctf }}">{{ writeups[ctf]["name"] }}</a></li>
+        {% endfor %}
+        </ul>
+    {% endif %}
 
 {% endblock body %}

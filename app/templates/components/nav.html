@@ -2,4 +2,16 @@
     <div class="navbar-brand">
         <a class="header whitelink" href="https://www.progpilot.com/writeups">ProgPilot writeups</a>
     </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            {% for item in breadcrumb %}
+                {% if loop.index == loop.length %}
+                    <li class="breadcrumb-item" aria-current="page">{{ item[0] }}</li>
+                {% else %}
+                    <li class="breadcrumb-item"><a class="whitelink" href="{{ item[1] }}">{{ item[0] }}</a></li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
 </nav>

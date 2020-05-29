@@ -1,0 +1,12 @@
+{% set siteTitle = "ProgPilot writeups" %}
+{% set metaDescription = errorCode + " - " + errorMessage %}
+{% set breadcrumb = [("Error", "")] %}
+
+{% extends "base.html" %}
+
+{% block body %}
+
+    <h1 class="display-4">{{ errorCode }}</h1>
+    <p>{{ errorMessage }}</p>
+
+{% endblock body %}
