@@ -7,6 +7,6 @@
 {% block body %}
 
     <h1 class="display-4">{{ errorCode }}</h1>
-    <p>{{ errorMessage }}</p>
+    <p>{{ errorMessage | safe }}</p>
 
 {% endblock body %}
