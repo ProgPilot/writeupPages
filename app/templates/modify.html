@@ -1,0 +1,90 @@
+{% set pageTitle = "Config modification" %}
+{% extends "base.html" %}
+
+{% block head %}
+
+    <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.0.0/dist/jsoneditor.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsoneditor@9.0.0/dist/jsoneditor.min.css">
+
+{% endblock head %}
+
+{% block body %}
+
+    {% if mode == "modify" %}
+
+    <div id="jsoneditor" style="width: 100%; height: 500px;"></div>
+
+    <form method="post">
+        <input id="jsonBox" type="hidden" name="config" value="">
+
+        <br>
+
+        Auth code
+        <input type="password" name="authcode">
+
+        <br><br>
+
+        <button type="submit" class="btn btn-dark">Save</button>
+    </form>
+
+    <script>
+
+        const http = new XMLHttpRequest();
+        const url = "../resources/writeups.json";
+
+        // create the editor
+        const container = document.getElementById("jsoneditor")
+        const jsonOutput = document.getElementById("jsonBox")
+        const options = {"mode": "code", "indentation": 4, "search": false, "onChangeText": function(j) {
+            jsonOutput.value = j;
+            }};
+        const editor = new JSONEditor(container, options)
+
+        http.open("GET", url, true);
+
+        function transferComplete () {
+            // set json
+            jsonOutput.value = http.responseText;
+            const initialJson = JSON.parse(http.responseText);
+            editor.set(initialJson)
+        }
+
+        http.onreadystatechange = function () {
+            if (http.readyState === 4 && http.status === 200) transferComplete();
+        }
+
+        http.send()
+
+        // get json
+        //const updatedJson = editor.get()
+    </script>
+
+    {% elif mode == "ok" %}
+
+    <h4>Success</h4>
+    <p>Redirecting in 3 seconds...</p>
+    <script>window.setTimeout(function(){window.location.href = '{{ urlRoot }}';}, 3000);</script>
+
+    {% elif mode == "notmod" %}
+
+    <h4>Not modified</h4>
+    <p>Redirecting in 3 seconds...</p>
+    <script>window.setTimeout(function(){window.location.href = '{{ urlRoot }}';}, 3000);</script>
+
+    {% elif mode == "bad" %}
+
+    <h4>Error</h4>
+    <p>{{ message }}</p>
+    <p>Going back in 3 seconds...</p>
+    <script>window.setTimeout(function(){window.history.back();}, 3000);</script>
+
+    {% elif mode == "unauth" %}
+
+    <h4>Unauthorised</h4>
+    <p>Check your auth code and try again</p>
+    <p>Going back in 3 seconds...</p>
+    <script>window.setTimeout(function(){window.history.back();}, 3000);</script>
+
+    {% endif %}
+
+{% endblock %}

@@ -1,8 +1,7 @@
 import flask
 import jinja2
 import json
-
-from werkzeug.routing import RoutingException, RequestRedirect
+import base64
 
 import parsers
 import os
@@ -52,7 +51,7 @@ SETTINGS = load_settings()
 
 
 def load_writeups(plaintext=False):
-    with open("writeups.json") as f:
+    with open("resources/writeups.json") as f:
         if plaintext:
             return os.linesep.join([s for s in f.read().splitlines() if s])
         else:
@@ -101,6 +100,16 @@ def server_error(_=""):
                                "Report this issue: "
                                f"<a href='mailto:tom@progpilot.com?subject=HTTP 500 at {flask.request.url}'"
                                " target='_blank' rel='noopener'>tom@progpilot.com</a>")
+
+
+@app.route("/resources/<rn>")
+def load_resource(rn=None):
+    return flask.send_from_directory("resources", rn)
+
+
+@app.route("/favicon.ico")
+def load_favicon():
+    return flask.send_from_directory("resources", "favicon.ico")
 
 
 @app.route("/")
@@ -187,3 +196,49 @@ def chall(ctf, chall):
         "challContent": content,
         "breadcrumb": breadcrumb
     })
+
+
+@app.route("/modify/", methods=["GET", "POST"])
+def modify():
+    render_arguments = {}
+
+    if flask.request.method == "POST":
+        auth_code = flask.request.form["authcode"]
+        new_content = flask.request.form["config"]
+
+        success = False
+        for cred in creds.modify:
+            # if constant_time_compare(hashlib.sha512(auth_code.encode()).hexdigest(), cred):
+            if constant_time_compare(bcrypt.hashpw(auth_code.encode(), cred[1]), cred[0]):
+                success = True
+
+        if not success:
+            return populate_error(403, f"Unauthorised {return_js}")
+            # return "Unauthorised <script>window.setTimeout(function(){window.history.back();}, 2000);</script>", 403
+
+        # backup current config
+        config_backups_dir = os.path.join(DIR, "configBackups")
+        if not os.path.exists(config_backups_dir):
+            os.mkdir(config_backups_dir)
+
+        if current_content != new_content:
+            validation_ok, message = validate_config(new_content)
+            if not validation_ok:
+                return populate_error(400, f"{message}{return_js}")
+
+            open(os.path.join(DIR, "configBackups", f"{int(time.time())}.json.bak"), "w").write(current_content)
+
+            # modify config
+            open(os.path.join(DIR, "resources", "writeups.json"), "w").write(new_content)
+
+            return populate_error(200, f"Success {redirect_js}")  # this? naaaah, this is an error. totally.
+        else:
+            return populate_error(200, f"Not modified {redirect_js}")
+    else:
+        render_arguments["mode"] = "modify"
+        render_arguments["content"] = load_writeups(plaintext=True)
+
+    render_arguments["breadcrumb"] = Breadcrumb()
+    render_arguments["breadcrumb"].add("Modify", "")
+
+    return render_template("modify.html", render_arguments)
