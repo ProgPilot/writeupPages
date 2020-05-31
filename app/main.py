@@ -1,15 +1,14 @@
+import json
+import os
 import time
 
 import bcrypt
 import flask
 import jinja2
-import json
 import jsonschema
-
-import parsers
-import os
 from werkzeug.exceptions import HTTPException
 
+import parsers
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))  # Move to script location
 SETTINGS_FILE = "settings.json"
@@ -17,9 +16,10 @@ SETTINGS_FILE = "settings.json"
 app = flask.Flask(__name__)
 
 j_env = jinja2.Environment(
-    loader = jinja2.FileSystemLoader("templates"),
-    autoescape = True
+    loader=jinja2.FileSystemLoader("templates"),
+    autoescape=True
 )
+
 
 class DefaultArguments(dict):
     def __init__(self):
@@ -49,11 +49,6 @@ def load_settings():
     return s
 
 
-def save_settings(sett):
-    with open(SETTINGS_FILE, "w") as f:
-        json.dump(sett, f)
-
-
 SETTINGS = load_settings()
 
 
@@ -76,11 +71,11 @@ def count_writeups(wu_obj=None):
     return count
 
 
-def render_template(template, vars:dict):
+def render_template(template, vars: dict):
     return j_env.get_template(template).render(**DefaultArguments(), **vars)
 
 
-def render_error(error_code:int, error_message):
+def render_error(error_code: int, error_message):
     return render_template("error.html", {"errorCode": str(error_code), "errorMessage": error_message}), error_code
 
 
@@ -115,7 +110,7 @@ def validate_config(obj_str):
         return False, "Invalid JSON"
     except ValueError:
         return False, "CTF IDs must be unique and challenge IDs must be unique to their parent CTF -" \
-            " there are two or more occurances of a key"
+                      " there are two or more occurances of a key"
 
     with open("resources/writeups.schema.json") as f:
         schema = json.load(f)
@@ -153,9 +148,9 @@ def not_found_error(_=""):
 @app.errorhandler(500)
 def server_error(_=""):
     return render_error(500, "Internal server error - try again later<br>Been like this for a while? "
-                               "Report this issue: "
-                               f"<a href='mailto:tom@progpilot.com?subject=HTTP 500 at {flask.request.url}'"
-                               " target='_blank' rel='noopener'>tom@progpilot.com</a>")
+                             "Report this issue: "
+                             f"<a href='mailto:tom@progpilot.com?subject=HTTP 500 at {flask.request.url}'"
+                             " target='_blank' rel='noopener'>tom@progpilot.com</a>")
 
 
 @app.route("/resources/<rn>")
@@ -191,7 +186,7 @@ def ctf(ctf):
     ctf_writeups = writeups[ctf]["writeups"]
     for writeup in ctf_writeups:
 
-        c = {**ctf_writeups[writeup], **{"short_name":writeup}}
+        c = {**ctf_writeups[writeup], **{"short_name": writeup}}
 
         if ctf_writeups[writeup]["category"] not in categories:
             categories[ctf_writeups[writeup]["category"]] = [c]
