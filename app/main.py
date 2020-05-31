@@ -282,6 +282,7 @@ def chall(ctf, chall):
     breadcrumb.add(chall_data["name"], "")
 
     return render_template("chall.html", {
+        "ctfName": writeups[ctf]["name"],
         "challData": chall_data,
         "challContent": content,
         "breadcrumb": breadcrumb

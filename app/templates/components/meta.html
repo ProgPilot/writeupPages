@@ -1,5 +1,9 @@
 <meta name="description" content="{{ metaDescription }}">
-<meta property="og:title" content="ProgPilot writeups">
+{% if pageTitle is defined %}
+    <meta property="og:title" content="{{ pageTitle }}">
+{% else %}
+    <meta property="og:title" content="ProgPilot writeups">
+{% endif %}
 <meta property="og:site_name" content="progpilot.com">
 <meta property="og:description" content="{{ metaDescription }}">
 <meta property="og:url" content="https://www.progpilot.com/writeups/{{ urlPath }}">
