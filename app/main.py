@@ -1,7 +1,10 @@
+import time
+
+import bcrypt
 import flask
 import jinja2
 import json
-import base64
+import jsonschema
 
 import parsers
 import os
@@ -40,11 +43,15 @@ def sort_dict(d):
     return s
 
 
-# Load settings
 def load_settings():
     with open(SETTINGS_FILE) as f:
         s = json.load(f)
     return s
+
+
+def save_settings(sett):
+    with open(SETTINGS_FILE, "w") as f:
+        json.dump(sett, f)
 
 
 SETTINGS = load_settings()
@@ -77,12 +84,61 @@ def render_error(error_code:int, error_message):
     return render_template("error.html", {"errorCode": str(error_code), "errorMessage": error_message}), error_code
 
 
-@app.errorhandler(Exception)
-def handle_other_error(e):
-    code = 500
-    if isinstance(e, HTTPException):
-        code = e.code
-    return render_error(code, str(e).split(": ")[-1])
+def constant_time_compare(a, b):
+    # Used when comparing password hashes
+    # See https://www.tdpain.net/bookstack/books/programming-theory/page/preventing-against-timing-attacks
+    if len(a) != len(b):
+        return False
+
+    result = 0
+    for x, y in zip(a, b):
+        result |= x ^ y
+    return result == 0
+
+
+def raise_on_duplicate_keys(ordered_pairs):
+    # Raises on duplicate keys, used in validate_config
+    d = {}
+    for k, v in ordered_pairs:
+        if k in d:
+            raise ValueError(k)
+        else:
+            d[k] = v
+    return d
+
+
+def validate_config(obj_str):
+    try:
+        obj = json.loads(obj_str, object_pairs_hook=raise_on_duplicate_keys)  # this method will happily deal with
+        # duplicate keys by combining entries
+    except json.decoder.JSONDecodeError:
+        return False, "Invalid JSON"
+    except ValueError:
+        return False, "CTF IDs must be unique and challenge IDs must be unique to their parent CTF -" \
+            " there are two or more occurances of a key"
+
+    with open("resources/writeups.schema.json") as f:
+        schema = json.load(f)
+
+    try:
+        jsonschema.validate(instance=obj, schema=schema)
+    except jsonschema.exceptions.ValidationError as e:
+        return False, str(e)
+
+    return True, ""
+
+
+if os.environ["FLASK_DEBUG"] != "1":
+    @app.errorhandler(Exception)
+    def handle_other_error(e):
+        code = 500
+        if isinstance(e, HTTPException):
+            code = e.code
+
+        if code == 500:
+            return server_error()
+        else:
+            return render_error(code, str(e).split(": ")[-1])
 
 
 @app.errorhandler(404)
@@ -201,44 +257,44 @@ def chall(ctf, chall):
 @app.route("/modify/", methods=["GET", "POST"])
 def modify():
     render_arguments = {}
+    response_code = 200
 
     if flask.request.method == "POST":
         auth_code = flask.request.form["authcode"]
         new_content = flask.request.form["config"]
+        current_content = load_writeups(plaintext=True)
 
         success = False
-        for cred in creds.modify:
-            # if constant_time_compare(hashlib.sha512(auth_code.encode()).hexdigest(), cred):
-            if constant_time_compare(bcrypt.hashpw(auth_code.encode(), cred[1]), cred[0]):
+        for cred in SETTINGS["credentials"]:
+            if constant_time_compare(bcrypt.hashpw(auth_code.encode(), cred[1].encode()), cred[0].encode()):
                 success = True
 
         if not success:
-            return populate_error(403, f"Unauthorised {return_js}")
-            # return "Unauthorised <script>window.setTimeout(function(){window.history.back();}, 2000);</script>", 403
-
-        # backup current config
-        config_backups_dir = os.path.join(DIR, "configBackups")
-        if not os.path.exists(config_backups_dir):
-            os.mkdir(config_backups_dir)
-
-        if current_content != new_content:
-            validation_ok, message = validate_config(new_content)
-            if not validation_ok:
-                return populate_error(400, f"{message}{return_js}")
-
-            open(os.path.join(DIR, "configBackups", f"{int(time.time())}.json.bak"), "w").write(current_content)
-
-            # modify config
-            open(os.path.join(DIR, "resources", "writeups.json"), "w").write(new_content)
-
-            return populate_error(200, f"Success {redirect_js}")  # this? naaaah, this is an error. totally.
+            render_arguments["mode"] = "unauth"
+            response_code = 403
         else:
-            return populate_error(200, f"Not modified {redirect_js}")
+            # backup current config
+            config_backups_dir = "configBackups"
+            if not os.path.exists(config_backups_dir):
+                os.mkdir(config_backups_dir)
+
+            if current_content != new_content:
+                validation_ok, message = validate_config(new_content)
+                if not validation_ok:
+                    render_arguments["mode"] = "bad"
+                    render_arguments["message"] = message.replace("\n", "<br>")
+                    response_code = 400
+                else:
+                    open(os.path.join("configBackups", f"{int(time.time())}.json.bak"), "w").write(current_content)
+                    # modify config
+                    open(os.path.join("resources", "writeups.json"), "w").write(new_content)
+                    render_arguments["mode"] = "ok"
+            else:
+                render_arguments["mode"] = "notmod"
     else:
         render_arguments["mode"] = "modify"
-        render_arguments["content"] = load_writeups(plaintext=True)
 
     render_arguments["breadcrumb"] = Breadcrumb()
     render_arguments["breadcrumb"].add("Modify", "")
 
-    return render_template("modify.html", render_arguments)
+    return render_template("modify.html", render_arguments), response_code

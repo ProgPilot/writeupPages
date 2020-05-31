@@ -4,13 +4,57 @@
 {% block head %}
 
     <script src="https://cdn.jsdelivr.net/npm/jsoneditor@9.0.0/dist/jsoneditor.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ajv@6.12.2/dist/ajv.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsoneditor@9.0.0/dist/jsoneditor.min.css">
+
+    <style>
+        .loadingspinner {
+			border: 3px solid var(--dark);
+			border-top: 3px solid #e9e9e9;
+			border-radius: 50%;
+			width: 75px;
+			height: 75px;
+			animation: spinner 1s linear infinite;
+            z-index: 1001;
+		}
+
+		@keyframes spinner {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
+
+        .overlay {
+            background: #e9e9e9;
+            z-index: 1000;
+            display: block;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            opacity: 0.5;
+        }
+
+        .midpage {
+            width: 75px;
+            height: 75px;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin-left: -50px;
+            margin-top: -50px;
+        }
+    </style>
 
 {% endblock head %}
 
 {% block body %}
 
     {% if mode == "modify" %}
+
+    <div class="overlay" id="spinner">
+        <div class="loadingspinner midpage"></div>
+    </div>
 
     <div id="jsoneditor" style="width: 100%; height: 500px;"></div>
 
@@ -29,34 +73,58 @@
 
     <script>
 
-        const http = new XMLHttpRequest();
-        const url = "../resources/writeups.json";
+        function httpGet(url, callback)
+        {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                    callback(xmlHttp.responseText);
+            }
+            xmlHttp.open("GET", url, true); // true for asynchronous
+            xmlHttp.send(null);
+        }
 
-        // create the editor
         const container = document.getElementById("jsoneditor")
         const jsonOutput = document.getElementById("jsonBox")
-        const options = {"mode": "code", "indentation": 4, "search": false, "onChangeText": function(j) {
-            jsonOutput.value = j;
-            }};
-        const editor = new JSONEditor(container, options)
+        const loadingSpinner = document.getElementById("spinner")
+        let editor;
+        let schemaString;
+        let jsonString;
 
-        http.open("GET", url, true);
+        console.log("Getting schema")
 
-        function transferComplete () {
-            // set json
-            jsonOutput.value = http.responseText;
-            const initialJson = JSON.parse(http.responseText);
-            editor.set(initialJson)
-        }
+        httpGet("../resources/writeups.schema.json", function(s) {
+            schemaString = s;
 
-        http.onreadystatechange = function () {
-            if (http.readyState === 4 && http.status === 200) transferComplete();
-        }
+            console.log("Getting JSON")
 
-        http.send()
+            httpGet("../resources/writeups.json", function(s) {
+                jsonString = s;
 
-        // get json
-        //const updatedJson = editor.get()
+                console.log("Init")
+
+                console.log(JSON.parse(schemaString))
+
+                const options = {
+                    modes: ["code", "tree"],
+                    indentation: 4,
+                    search: false,
+                    onChangeText: function(j) { jsonOutput.value = j; },
+                    onValidationError: function(e) { console.log(e) },
+                    schema: JSON.parse(schemaString)
+                };
+
+                editor = new JSONEditor(container, options, JSON.parse(jsonString))
+
+                jsonOutput.value = jsonString;
+
+                console.log("Removing spinner")
+
+                loadingSpinner.style.display = "none";
+
+            })
+
+        })
     </script>
 
     {% elif mode == "ok" %}
@@ -74,9 +142,9 @@
     {% elif mode == "bad" %}
 
     <h4>Error</h4>
-    <p>{{ message }}</p>
-    <p>Going back in 3 seconds...</p>
-    <script>window.setTimeout(function(){window.history.back();}, 3000);</script>
+    <code>{{ message | safe }}</code>
+    <br>
+    <a href="javascript:history.back()">Click here to go back</a>
 
     {% elif mode == "unauth" %}
 

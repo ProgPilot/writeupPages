@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://www.progpilot.com/writeups/resources/writeups.schema.json",
+  "title": "Writeups listing",
+  "description": "Collection of writeups",
+  "definitions": {
+    "competition": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "ctftime_event_id": {
+          "type": "string"
+        },
+        "score": {
+          "type": "integer"
+        },
+        "position": {
+          "type": "integer"
+        },
+        "total_teams": {
+          "type": "integer"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "writeups": {
+          "type": "object",
+          "patternProperties": {
+            ".": {"$ref": "#/definitions/challenge"}
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "name",
+        "ctftime_event_id",
+        "writeups"
+      ],
+      "additionalProperties": false
+    },
+    "challenge": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "html",
+            "youtube",
+            "pdf"
+          ]
+        },
+        "resource": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "author",
+        "resource"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "patternProperties": {
+    ".": {"$ref": "#/definitions/competition"}
+  },
+  "uniqueItems": true
+}
