@@ -251,3 +251,4 @@ settings.json
 creds.csv
 writeups.json
 app/content/*
+app/configBackups/*
