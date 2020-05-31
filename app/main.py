@@ -21,11 +21,26 @@ j_env = jinja2.Environment(
 )
 
 
+def load_settings():
+    with open(SETTINGS_FILE) as f:
+        s = json.load(f)
+    return s
+
+
+def save_settings(s):
+    with open(SETTINGS_FILE, "w") as f:
+        json.dump(s, f)
+
+
+SETTINGS = load_settings()
+
+
 class DefaultArguments(dict):
     def __init__(self):
         super().__init__({
             "urlRoot": flask.request.url_root,
-            "siteTitle": "ProgPilot writeups"
+            "siteTitle": SETTINGS["siteTitle"],
+            "copyrightName": SETTINGS["copyrightName"]
         })
 
 
@@ -41,15 +56,6 @@ def sort_dict(d):
     # Sorts dict by key
     s = dict(sorted(d.items(), key=lambda x: x[0].lower()))
     return s
-
-
-def load_settings():
-    with open(SETTINGS_FILE) as f:
-        s = json.load(f)
-    return s
-
-
-SETTINGS = load_settings()
 
 
 def load_writeups(plaintext=False):
