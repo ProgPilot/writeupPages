@@ -132,7 +132,7 @@ def validate_config(obj_str):
 add_e_h = True
 if "FLASK_DEBUG" in os.environ:
     if os.environ["FLASK_DEBUG"] == "1":
-    add_e_h = False
+        add_e_h = False
 
 if add_e_h:
     @app.errorhandler(Exception)
