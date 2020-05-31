@@ -1,5 +1,9 @@
 # writeupPages
 
+![Mozilla Public Licence v2](https://img.shields.io/badge/Licence-MPL--2.0-yellow.svg?style=flat")
+![Python 3.8](https://img.shields.io/badge/Written%20in-Python--3.8-green.svg?style=flat&logo=python&logoColor=white)
+![pipenv fan](https://img.shields.io/badge/pipenv-is%20amazing-red?style=flat)
+
 A Flask app written to host CTF writeups.
 
 ### Features
