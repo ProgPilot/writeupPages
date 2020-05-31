@@ -1,6 +1,6 @@
 import json
 import os
-import time
+from datetime import datetime
 
 import bcrypt
 import flask
@@ -29,7 +29,7 @@ def load_settings():
 
 def save_settings(s):
     with open(SETTINGS_FILE, "w") as f:
-        json.dump(s, f)
+        json.dump(s, f, indent=4)
 
 
 SETTINGS = load_settings()
@@ -40,7 +40,8 @@ class DefaultArguments(dict):
         super().__init__({
             "urlRoot": flask.request.url_root,
             "siteTitle": SETTINGS["siteTitle"],
-            "copyrightName": SETTINGS["copyrightName"]
+            "copyrightName": SETTINGS["copyrightName"],
+            "lastModified": datetime.fromtimestamp(SETTINGS["lastModifiedTime"]).strftime("%a, %d %B @ %I:%M%p")
         })
 
 
@@ -286,7 +287,9 @@ def modify():
                     render_arguments["message"] = message.replace("\n", "<br>")
                     response_code = 400
                 else:
-                    open(os.path.join("configBackups", f"{int(time.time())}.json.bak"), "w").write(current_content)
+                    open(os.path.join("configBackups", f"{int(datetime.now().timestamp())}.json.bak"), "w").write(current_content)
+                    SETTINGS["lastModifiedTime"] = int(datetime.now().timestamp())
+                    save_settings(SETTINGS)
                     # modify config
                     open(os.path.join("resources", "writeups.json"), "w").write(new_content)
                     render_arguments["mode"] = "ok"
