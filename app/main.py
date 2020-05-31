@@ -143,6 +143,14 @@ if os.environ["FLASK_DEBUG"] != "1":
             return render_error(code, str(e).split(": ")[-1])
 
 
+# Easter egg
+@app.after_request
+def add_header(resp):
+    resp.headers["x-powered-by"] = "Tiny cute kittens"
+    resp.headers["x-servernickname"] = "Michael"
+    return resp
+
+
 @app.errorhandler(404)
 def not_found_error(_=""):
     return render_error(404,
