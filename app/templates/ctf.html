@@ -5,34 +5,42 @@
 
     <h4>Writeups for <b><a href="https://ctftime.org/event/{{ ctfData['ctftime_event_id'] }}" target="_blank" rel="noopener">{{ ctfData["name"] }}</a></b></h4>
 
-    {% if "score" in ctfData %}
-        {% if "position" in ctfData %}
-            {% if "total_teams" in ctfData %}
-                <p>Team ranking: <b>{{ ctfData["position"] }}{{ positionSuffix }} of {{ ctfData["total_teams"] }}</b> with <b>{{ ctfData["score"] }} points</b></p>
-            {% else %}
-                <p>Team ranking: <b>{{ ctfData["position"] }}{{ positionSuffix }}</b> with <b>{{ ctfData["score"] }} points</b></p>
-            {% endif %}
-        {% else %}
-            <p>Team score: <b>{{ ctfData["score"] }} points</b></p>
-        {% endif %}
-    {% endif %}
+    {% if not_released %}
 
-    {% if "notes" in ctfData %}
-        <div class="alert alert-primary" role="alert">{{ ctfData["notes"] | safe }}</div>
-    {% endif %}
+        <i>The writeups for this CTF have not been released yet. Check back on {{ release_time }}</i>
 
-    {% if ctfData["writeups"]|length == 0 %}
-        <p>No writeups available at this time - check back later.</p>
     {% else %}
-        <ul>
-        {% for category in categories %}
-            <li>{{ category }}<ul>
-            {% for writeup in categories[category] %}
-                <a href="{{ writeup['short_name'] }}">{{ writeup["name"] }}</a> by {{ writeup["author"] }}<br>
+
+        {% if "score" in ctfData %}
+            {% if "position" in ctfData %}
+                {% if "total_teams" in ctfData %}
+                    <p>Team ranking: <b>{{ ctfData["position"] }}{{ positionSuffix }} of {{ ctfData["total_teams"] }}</b> with <b>{{ ctfData["score"] }} points</b></p>
+                {% else %}
+                    <p>Team ranking: <b>{{ ctfData["position"] }}{{ positionSuffix }}</b> with <b>{{ ctfData["score"] }} points</b></p>
+                {% endif %}
+            {% else %}
+                <p>Team score: <b>{{ ctfData["score"] }} points</b></p>
+            {% endif %}
+        {% endif %}
+
+        {% if "notes" in ctfData %}
+            <div class="alert alert-primary" role="alert">{{ ctfData["notes"] | safe }}</div>
+        {% endif %}
+
+        {% if ctfData["writeups"]|length == 0 %}
+            <p>No writeups available at this time - check back later.</p>
+        {% else %}
+            <ul>
+            {% for category in categories %}
+                <li>{{ category }}<ul>
+                {% for writeup in categories[category] %}
+                    <a href="{{ writeup['short_name'] }}">{{ writeup["name"] }}</a> by {{ writeup["author"] }}<br>
+                {% endfor %}
+                </ul></li>
             {% endfor %}
-            </ul></li>
-        {% endfor %}
-        </ul>
+            </ul>
+        {% endif %}
+
     {% endif %}
 
 {% endblock body %}

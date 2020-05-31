@@ -173,6 +173,17 @@ def load_resource(rn=None):
     return flask.send_from_directory("resources", rn)
 
 
+@app.route("/content/<dir>/<file>")
+def load_content(dir=None, file=None):
+    print(dir, file)
+    if dir == None or file == None:
+        return not_found_error()
+    elif file.split(".")[-1].lower() == "pdf":
+        return flask.send_from_directory(os.path.join("content", dir), file)
+
+    return not_found_error()
+
+
 @app.route("/favicon.ico")
 def load_favicon():
     return flask.send_from_directory("resources", "favicon.ico")
@@ -193,8 +204,16 @@ def index():
 def ctf(ctf):
     writeups = load_writeups()
 
+    template_include = {}
+
     if ctf not in writeups:
         flask.abort(404)
+
+    if "release_time" in writeups[ctf]:
+        if writeups[ctf]["release_time"] > datetime.now().timestamp():
+            template_include["not_released"] = True
+            template_include["release_time"] = datetime.fromtimestamp(writeups[ctf]["release_time"]).\
+                strftime("%a, %d %B @ %I:%M%p")
 
     categories = {}
 
@@ -214,6 +233,7 @@ def ctf(ctf):
     breadcrumb.add(writeups[ctf]["name"], flask.Request.base_url)
 
     return render_template("ctf.html", {
+        **template_include,
         "ctfData": writeups[ctf],
         "positionSuffix": {"1": "st", "2": "nd", "3": "rd"}.get(str(
             writeups[ctf]["position"])[-1] if "position" in writeups[ctf] else "0", "th"),

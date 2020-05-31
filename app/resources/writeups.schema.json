@@ -25,6 +25,9 @@
         "notes": {
           "type": "string"
         },
+        "release_time": {
+          "type": "integer"
+        },
         "writeups": {
           "type": "object",
           "patternProperties": {
