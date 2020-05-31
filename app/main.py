@@ -129,8 +129,12 @@ def validate_config(obj_str):
 
     return True, ""
 
+add_e_h = True
+if "FLASK_DEBUG" in os.environ:
+    if os.environ["FLASK_DEBUG"] == "1":
+    add_e_h = False
 
-if os.environ["FLASK_DEBUG"] != "1":
+if add_e_h:
     @app.errorhandler(Exception)
     def handle_other_error(e):
         code = 500
