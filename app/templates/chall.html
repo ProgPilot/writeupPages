@@ -35,7 +35,20 @@
 {% block body %}
 
     <h4>Writeup for <b>{{ challData["name"] }}</b></h4>
-    <p>Category: {{ challData["category"] }}<br>Author: {{ challData["author"] }}</p>
+    <p>Category: {{ challData["category"] }}<br>Author: {{ challData["author"] }}<br>
+
+        {% if (tags is defined) and tags %}  {# if tags exists and isn't empty #}
+
+            Tags:
+
+            {% for tag in tags %}
+
+                <span class="badge badge-secondary">{{ tag }}</span>
+
+            {% endfor %}
+        {% endif %}
+
+    </p>
 
     {{ challContent | safe }}
 

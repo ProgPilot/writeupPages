@@ -179,7 +179,6 @@ def load_resource(rn=None):
 
 @app.route("/content/<dir>/<file>")
 def load_content(dir=None, file=None):
-    print(dir, file)
     if dir == None or file == None:
         return not_found_error()
     elif file.split(".")[-1].lower() == "pdf":
@@ -285,7 +284,8 @@ def chall(ctf, chall):
         "ctfName": writeups[ctf]["name"],
         "challData": chall_data,
         "challContent": content,
-        "breadcrumb": breadcrumb
+        "breadcrumb": breadcrumb,
+        **({"tags": chall_data["tags"]} if "tags" in chall_data else {})
     })
 
 
