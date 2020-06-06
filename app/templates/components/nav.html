@@ -3,15 +3,24 @@
         <a class="header whitelink" href="{{ urlRoot }}">{{ siteTitle }}</a>
     </div>
 
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            {% for item in breadcrumb %}
+    <div class="collapse navbar-collapse">
+        <div class="navbar-nav mr-auto">
+            <ol class="breadcrumb">
+                {% for item in breadcrumb %}
                 {% if loop.index == loop.length %}
-                    <li class="breadcrumb-item" aria-current="page">{{ item[0] }}</li>
+                <li class="breadcrumb-item" aria-current="page">{{ item[0] }}</li>
                 {% else %}
-                    <li class="breadcrumb-item"><a class="whitelink" href="{{ item[1] }}">{{ item[0] }}</a></li>
+                <li class="breadcrumb-item"><a class="whitelink" href="{{ item[1] }}">{{ item[0] }}</a></li>
                 {% endif %}
-            {% endfor %}
-        </ol>
-    </nav>
+                {% endfor %}
+            </ol>
+        </div>
+
+        {% if searchPage != True %}
+            <div class="form-inline my-2 my-md-0">
+                {% include "components/searchbox.html" %}
+            </div>
+        {% endif %}
+    </div>
+
 </nav>

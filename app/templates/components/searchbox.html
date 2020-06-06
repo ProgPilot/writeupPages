@@ -1,0 +1,12 @@
+{% if searchPage != True %}
+    <form action="{{ urlRoot }}search/" method="get">
+{% endif %}
+    <div class="input-group">
+        <input type="text" class="form-control" placeholder="Search" value="{{ searchQuery }}" name="q">
+        <div class="input-group-append">
+            <input class="btn btn-dark" type="submit" value="Search">
+        </div>
+    </div>
+{% if searchPage != True %}
+    </form>
+{% endif %}

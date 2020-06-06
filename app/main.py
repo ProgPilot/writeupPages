@@ -9,6 +9,7 @@ import jsonschema
 from werkzeug.exceptions import HTTPException
 
 import parsers
+import siteSearch
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))  # Move to script location
 SETTINGS_FILE = "settings.json"
@@ -19,6 +20,12 @@ j_env = jinja2.Environment(
     loader=jinja2.FileSystemLoader("templates"),
     autoescape=True
 )
+
+
+CACHE = {
+    "categories": [],
+    "tags": []
+}
 
 
 def load_settings():
@@ -78,6 +85,30 @@ def count_writeups(wu_obj=None):
     return count
 
 
+def refresh_cache():
+    global CACHE
+    writeups = load_writeups()
+
+    # refresh category cache
+    categories = []
+    for ctf in writeups:
+        for chall in writeups[ctf]["writeups"]:
+            category = writeups[ctf]["writeups"][chall]["category"]
+            if category not in categories:
+                categories.append(category)
+    CACHE["categories"] = sorted(categories)
+
+    # refresh tag cache
+    tags = []
+    for ctf in writeups:
+        for chall in writeups[ctf]["writeups"]:
+            chall = writeups[ctf]["writeups"][chall]
+            if "tags" in chall:
+                for tag in chall["tags"]:
+                    tags.append(tag)
+    CACHE["tags"] = sorted(tags)
+
+
 def render_template(template, vars: dict):
     return j_env.get_template(template).render(**DefaultArguments(), **vars)
 
@@ -129,12 +160,14 @@ def validate_config(obj_str):
 
     return True, ""
 
-add_e_h = True
+
+add_error_handler = True
 if "FLASK_DEBUG" in os.environ:
     if os.environ["FLASK_DEBUG"] == "1":
-        add_e_h = False
+        add_error_handler = False
+        j_env.cache = None  # disable template cache
 
-if add_e_h:
+if add_error_handler:
     @app.errorhandler(Exception)
     def handle_other_error(e):
         code = 500
@@ -289,6 +322,46 @@ def chall(ctf, chall):
     })
 
 
+@app.route("/search/")
+def search():
+    start_time = datetime.now().timestamp()
+
+    writeups = load_writeups()
+
+    template_include = {}
+
+    kwarg_include = {}
+
+    if CACHE["categories"] == []:
+        refresh_cache()
+
+    if "c" in flask.request.args:
+        if flask.request.args["c"] != "none":
+            template_include["selectedCategory"] = flask.request.args["c"]
+            kwarg_include["category_filter"] = flask.request.args["c"]
+
+    if "t" in flask.request.args:
+        if flask.request.args["t"] != "none":
+            template_include["selectedTag"] = flask.request.args["t"]
+            kwarg_include["tag_filter"] = flask.request.args["t"]
+
+    if "q" in flask.request.args:
+        template_include["searchQuery"] = flask.request.args["q"]
+        template_include["results"] = siteSearch.search(flask.request.args["q"], writeups, **kwarg_include)
+
+    breadcrumb = Breadcrumb()
+    breadcrumb.add("Search", "")
+
+    template_include["processingTime"] = round(datetime.now().timestamp() - start_time, 8)
+
+    return render_template("search.html", {
+        **template_include,
+        "breadcrumb": breadcrumb,
+        "categories": CACHE["categories"],
+        "tags": CACHE["tags"]
+    })
+
+
 @app.route("/modify/", methods=["GET", "POST"])
 def modify():
     render_arguments = {}
@@ -325,6 +398,7 @@ def modify():
                     save_settings(SETTINGS)
                     # modify config
                     open(os.path.join("resources", "writeups.json"), "w").write(new_content)
+                    refresh_cache()
                     render_arguments["mode"] = "ok"
             else:
                 render_arguments["mode"] = "notmod"

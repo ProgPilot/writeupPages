@@ -1,0 +1,123 @@
+{% set pageTitle = "Search" %}
+{% set metaDescription = "ProgPilot writeups search" %}
+{% set searchPage = True %}
+{% extends "base.html" %}
+
+{% block head %}
+
+    <style>
+        .no-deco {
+            text-decoration: none;
+            color: inherit;
+            font-style: normal;
+        }
+
+        .no-deco h4 {
+            color: dodgerblue;
+        }
+
+        cite {
+            font-style: normal;
+        }
+
+        .low-line-height {
+            line-height: 7px;
+        }
+
+        .bottompad {
+            padding-bottom: 15px;
+        }
+
+    </style>
+
+{% endblock head %}
+
+{% block body %}
+
+    <h3>Search{{ ' results' if searchQuery is defined }}</h3>
+
+    {% if searchQuery is defined %}
+        <p class="grey"><i>{{ results | length }} results in {{ processingTime }} seconds</i></p>
+
+        <br>
+
+        {{ controls() }}
+
+        <br>
+
+        <div class="row">
+            <div class="col-8">
+
+                {% if results | length != 0 %}
+
+                    {% for result in results %}
+
+                    <a href="{{ urlRoot }}{% for part in result[2] %}{{ part[0] }}/{% endfor %}" class="no-deco bottompad">
+                        <h4 class="low-line-height">{{ result[0] }}</h4>
+                        <span>{{ "Competition" if result[1] == "ctf" else "Writeup" }} | </span>
+                        <cite>Home ›
+                        {% for part in result[2] %}
+                            {% if loop.index == loop.length %}
+                                {{ part[1] }}
+                            {% else %}
+                                {{ part[1] }} ›
+                            {% endif %}
+                        {% endfor %}
+                        </cite>
+                    </a>
+
+                    <br><br>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <p>No results found for the selected options</p>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+    {% else %}
+        <br>
+        {{ controls() }}
+    {% endif %}
+
+{% endblock body %}
+
+{% macro controls() -%}
+
+    <form action="{{ urlRoot }}search/" method="get" class="form form-inline">
+
+        <div class="form-group leftpad">
+            {% include "components/searchbox.html" %}
+        </div>
+
+        <div class="form-group leftpad">
+            <select class="form-control" name="c">
+                {% if selectedCategory != "none" and selectedCategory is defined %}
+                    <option value="{{ selectedCategory }}" selected hidden>{{ selectedCategory }}</option>
+                {% endif %}
+                <option value="none">Select category...</option>
+                {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group leftpad">
+            <select class="form-control" name="t">
+                {% if selectedTag != "none" and selectedTag is defined %}
+                    <option value="{{ selectedTag }}" selected hidden>{{ selectedTag }}</option>
+                {% endif %}
+                <option value="none">Select tag...</option>
+                {% for tag in tags %}
+                    <option value="{{ tag }}">{{ tag }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+    </form>
+
+{%- endmacro %}

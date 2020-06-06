@@ -9,6 +9,7 @@ verify_ssl = true
 flask = "*"
 bcrypt = "*"
 jsonschema = "*"
+jellyfish = "*"
 
 [requires]
 python_version = "3.8"
