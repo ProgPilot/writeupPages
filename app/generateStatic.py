@@ -2,6 +2,11 @@ import os
 import shutil
 import time
 
+# Set CWD to script location
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
+
 os.environ["GENERATING_STATIC"] = "1"
 
 import main  # flask app
@@ -9,7 +14,7 @@ import main  # flask app
 OUTPUT_DIRECTORY = "dist"
 
 if os.path.exists(OUTPUT_DIRECTORY):
-    shutil.rmtree(OUTPUT_DIRECTORY, ignore_errors=True)# Clear pre-existing
+    shutil.rmtree(OUTPUT_DIRECTORY, ignore_errors=True)  # Clear pre-existing
 
 time.sleep(0.5)
 

@@ -16,3 +16,4 @@ python_version = "3.8"
 
 [scripts]
 app = "flask run"
+build = "python app/generateStatic.py"
