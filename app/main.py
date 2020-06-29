@@ -53,7 +53,8 @@ class DefaultArguments(dict):
             "siteTitle": SETTINGS["siteTitle"],
             "copyrightName": SETTINGS["copyrightName"],
             "lastModified": datetime.fromtimestamp(SETTINGS["lastModifiedTime"]).strftime("%a, %d %B @ %I:%M%p")
-                if "GENERATING_STATIC" not in os.environ else datetime.now().strftime("%a, %d %B @ %I:%M%p")
+                if "GENERATING_STATIC" not in os.environ else datetime.now().strftime("%a, %d %B @ %I:%M%p"),
+            "staticSite": "GENERATING_STATIC" in os.environ
         })
 
 
