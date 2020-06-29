@@ -10,6 +10,7 @@ A Flask app written to host CTF writeups.
 * Set per-CTF release times
 * Fast
 * Supports a variety of writeup formats including PDF, HTML and YouTube
+* Bundled static site generator
 
 ### Why you shouldn't use this
 This was created for ProgPilot and it may be difficult to change and update for your own use. Some, but not all of the
