@@ -42,21 +42,24 @@ def save_settings(s):
 SETTINGS = load_settings()
 
 
+def url_root():
+    return SETTINGS["urlRoot"] if "GENERATING_STATIC" in os.environ else flask.request. url_root
+
+
 class DefaultArguments(dict):
     def __init__(self):
         super().__init__({
-            "urlRoot": SETTINGS["urlRoot"],
+            "urlRoot": url_root(),
             "siteTitle": SETTINGS["siteTitle"],
             "copyrightName": SETTINGS["copyrightName"],
-            # This would be when using as an actual Flask app
-            # "lastModified": datetime.fromtimestamp(SETTINGS["lastModifiedTime"]).strftime("%a, %d %B @ %I:%M%p")
-            "lastModified": datetime.now().strftime("%a, %d %B @ %I:%M%p")
+            "lastModified": datetime.fromtimestamp(SETTINGS["lastModifiedTime"]).strftime("%a, %d %B @ %I:%M%p")
+                if "GENERATING_STATIC" not in os.environ else datetime.now().strftime("%a, %d %B @ %I:%M%p")
         })
 
 
 class Breadcrumb(list):
     def __init__(self):
-        super().__init__([("Home", SETTINGS["urlRoot"])])
+        super().__init__([("Home", url_root())])
 
     def add(self, name, url):
         super().append((name, url))
@@ -310,7 +313,7 @@ def chall(ctf, chall):
     elif writeup_type == "html":
         content = parsers.html(open("content/" + res, encoding="utf8", errors="ignore").read())
     elif writeup_type == "pdf":
-        content = parsers.pdf(SETTINGS["urlRoot"] + "content/" + res)
+        content = parsers.pdf(url_root() + "content/" + res)
 
     breadcrumb = Breadcrumb()
     breadcrumb.add(writeups[ctf]["name"], "../")

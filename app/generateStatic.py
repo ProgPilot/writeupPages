@@ -2,6 +2,8 @@ import os
 import shutil
 import time
 
+os.environ["GENERATING_STATIC"] = "1"
+
 import main  # flask app
 
 OUTPUT_DIRECTORY = "dist"
