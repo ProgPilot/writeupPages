@@ -45,16 +45,18 @@ SETTINGS = load_settings()
 class DefaultArguments(dict):
     def __init__(self):
         super().__init__({
-            "urlRoot": flask.request.url_root,
+            "urlRoot": SETTINGS["urlRoot"],
             "siteTitle": SETTINGS["siteTitle"],
             "copyrightName": SETTINGS["copyrightName"],
-            "lastModified": datetime.fromtimestamp(SETTINGS["lastModifiedTime"]).strftime("%a, %d %B @ %I:%M%p")
+            # This would be when using as an actual Flask app
+            # "lastModified": datetime.fromtimestamp(SETTINGS["lastModifiedTime"]).strftime("%a, %d %B @ %I:%M%p")
+            "lastModified": datetime.now().strftime("%a, %d %B @ %I:%M%p")
         })
 
 
 class Breadcrumb(list):
     def __init__(self):
-        super().__init__([("Home", flask.request.url_root)])
+        super().__init__([("Home", SETTINGS["urlRoot"])])
 
     def add(self, name, url):
         super().append((name, url))
@@ -148,7 +150,7 @@ def validate_config(obj_str):
         return False, "Invalid JSON"
     except ValueError:
         return False, "CTF IDs must be unique and challenge IDs must be unique to their parent CTF -" \
-                      " there are two or more occurances of a key"
+                      " there are two or more occurrences of a key"
 
     with open("resources/writeups.schema.json") as f:
         schema = json.load(f)
@@ -274,7 +276,8 @@ def ctf(ctf):
         "positionSuffix": {"1": "st", "2": "nd", "3": "rd"}.get(str(
             writeups[ctf]["position"])[-1] if "position" in writeups[ctf] else "0", "th"),
         "categories": categories,
-        "breadcrumb": breadcrumb
+        "breadcrumb": breadcrumb,
+        "urlPath": f"{ctf}/"
     })
 
 
@@ -307,7 +310,7 @@ def chall(ctf, chall):
     elif writeup_type == "html":
         content = parsers.html(open("content/" + res, encoding="utf8", errors="ignore").read())
     elif writeup_type == "pdf":
-        content = parsers.pdf(flask.request.url_root + "content/" + res)
+        content = parsers.pdf(SETTINGS["urlRoot"] + "content/" + res)
 
     breadcrumb = Breadcrumb()
     breadcrumb.add(writeups[ctf]["name"], "../")
@@ -318,10 +321,12 @@ def chall(ctf, chall):
         "challData": chall_data,
         "challContent": content,
         "breadcrumb": breadcrumb,
+        "urlPath": f"{ctf}/{chall}",
         **({"tags": chall_data["tags"]} if "tags" in chall_data else {})
     })
 
 
+# Do not include in static site
 @app.route("/search/")
 def search():
     start_time = datetime.now().timestamp()
